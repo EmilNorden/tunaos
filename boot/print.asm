@@ -22,10 +22,8 @@ print_string_stop:
 	popa
 	ret
 
-; ===== print_hex =====
 ; prints a value in hexidecimal format to the display
-; Input:
-; DX - Value to be printed
+; DX = Value to be printed
 print_hex:
 	pusha
 	

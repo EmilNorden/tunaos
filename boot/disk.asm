@@ -22,10 +22,34 @@ disk_error:
 		; Set high byte to 0 so we can print ax in its entirety to display
 					; the return code
 	mov dx, ax
-	mov bx, DISK_ERROR_MSG
+	mov bx, DISK_READ_ERROR_MSG
 	call print_string
 	call print_hex
 	jmp $
+
+; Gets error from last drive operation
+; OUT AL = return code
+disk_get_last_error:
+	mov ah, 0x01	; 01h = Get Status of Last Drive Operation
+	int 0x13
+	ret
+	
+; Resets disk drive
+; AL = drive number
+disk_reset:
+	pusha
+	
+	mov ah, 0		; Reset command
+	int 0x13
+	or ah, ah
+	jz disk_reset_ok
+	mov bx, DISK_RESET_ERROR_MSG
+	call print_string
+	jmp $
+disk_reset_ok:
+	popa
+	ret
 	
 ; Variables
-DISK_ERROR_MSG	db "Disk read error: ", 0	
+DISK_READ_ERROR_MSG	db "Disk read error: ", 0
+DISK_RESET_ERROR_MSG db "Disk reset error", 0

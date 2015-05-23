@@ -1,6 +1,24 @@
+[bits 16]
 [org 0x7c00]
 KERNEL_OFFSET equ 0x1000	; This is the memory offset to which we will load our kernel
 
+jmp word load
+
+; BIOS parameter block
+                db "EMILEMIL"           ; OEM Label String
+                dw 512                  ; Bytes per sector
+                db 1                    ; Sectors per FAT cluster
+                dw 1                   ; Reserved sector count
+                db 2                    ; number of FATs
+                dw 224                  ; Root dir entries
+                dw 2880                 ; Total Sectors
+                db 240                  ; Double sided, 18 sectors per track
+                dw 9                    ; Sectors per FAT
+                dw 18                   ; Sectors per track
+                dw 2                    ; Head count (double sided)
+                dd 0                    ; Hidden sector count 
+
+load:
 	mov [BOOT_DRIVE], dl
 	
 	mov bp, 0x9000			; Set the stack
@@ -25,6 +43,9 @@ KERNEL_OFFSET equ 0x1000	; This is the memory offset to which we will load our k
 load_kernel:
 	mov bx, MSG_LOAD_KERNEL			; Announce that we are loading the kernel
 	call print_string
+	
+	mov dl, [BOOT_DRIVE]
+	call disk_reset
 	
 	mov bx, KERNEL_OFFSET			; Load 4 sector AFTER the boot sector
 	mov dh, 4						; (where our kernel is), to address KERNEL_OFFSET
