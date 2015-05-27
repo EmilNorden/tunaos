@@ -4,3 +4,22 @@ void memory_copy(char *source, char *dest, int count) {
 		*(dest + i) = *(source + i);
 	}
 }
+
+void int_to_string(int value, char *input)
+{
+	char *buffer = "                    ";
+	const int divisor = 10;
+	
+	int char_count = 1;
+	buffer[0] = '\0';
+	while(value > 0) {
+		int remainder = value % divisor;
+		buffer[char_count++] = 48 + remainder;
+		
+		value = value / divisor;
+	}
+	
+	for(int i = 0; i < char_count; ++i) {
+		input[i] = buffer[char_count - i - 1];
+	}
+}
