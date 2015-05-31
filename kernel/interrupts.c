@@ -42,11 +42,35 @@ void irq_initialize_idt(void)
 	IDTR.base = (uint32_t)&idt;
 	__asm__("lidt (%0)" : : "p"(&IDTR));
 	
+	// Setup interrupt gates for all CPU exceptions
 	irq_set_interrupt_gate(0, (unsigned)_isr0, 0x08, 0);
 	irq_set_interrupt_gate(1, (unsigned)_isr1, 0x08, 0);
 	irq_set_interrupt_gate(2, (unsigned)_isr2, 0x08, 0);
 	irq_set_interrupt_gate(3, (unsigned)_isr3, 0x08, 0);
 	irq_set_interrupt_gate(4, (unsigned)_isr4, 0x08, 0);
+	irq_set_interrupt_gate(5, (unsigned)_isr5, 0x08, 0);
+	irq_set_interrupt_gate(6, (unsigned)_isr6, 0x08, 0);
+	irq_set_interrupt_gate(7, (unsigned)_isr7, 0x08, 0);
+	irq_set_interrupt_gate(8, (unsigned)_isr8, 0x08, 0);
+	irq_set_interrupt_gate(9, (unsigned)_isr9, 0x08, 0);
+	irq_set_interrupt_gate(10, (unsigned)_isr10, 0x08, 0);
+	irq_set_interrupt_gate(11, (unsigned)_isr11, 0x08, 0);
+	irq_set_interrupt_gate(12, (unsigned)_isr12, 0x08, 0);
+	irq_set_interrupt_gate(13, (unsigned)_isr13, 0x08, 0);
+	irq_set_interrupt_gate(14, (unsigned)_isr14, 0x08, 0);
+	irq_set_interrupt_gate(16, (unsigned)_isr16, 0x08, 0);
+	irq_set_interrupt_gate(17, (unsigned)_isr17, 0x08, 0);
+	irq_set_interrupt_gate(18, (unsigned)_isr18, 0x08, 0);
+	irq_set_interrupt_gate(19, (unsigned)_isr19, 0x08, 0);
+	irq_set_interrupt_gate(20, (unsigned)_isr20, 0x08, 0);
+	irq_set_interrupt_gate(30, (unsigned)_isr30, 0x08, 0);
+	
+	irq_set_interrupt_gate(0x20, (unsigned)_isr30, 0x08, 0);
+	irq_set_interrupt_gate(0x21, (unsigned)_isr30, 0x08, 0);
+	
+	/*for(int i = 0; i < 256; ++i){
+		irq_set_interrupt_gate(i, (unsigned)_isr0, 0x08, 0);
+	}*/
 }
 
 void irq_initialize(void)

@@ -1,5 +1,5 @@
 /* 
-	Driver for the 8259 Programmable interrupt controller
+	Driver for the 8259 Programmable Interrupt Controller
 */
 
 #ifndef PIC_8259A_H_
