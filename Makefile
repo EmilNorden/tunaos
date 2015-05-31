@@ -1,8 +1,10 @@
-C_SOURCES = $(wildcard kernel/*.c drivers/*.c)
-ASM_SOURCES = $(wildcard boot/*.asm)
+ASM_KERNEL_SOURCES = $(wildcard kernel/*.asm)
+C_KERNEL_SOURCES = $(wildcard kernel/*.c drivers/*.c)
+ASM_BOOT_SOURCES = $(wildcard boot/*.asm)
 HEADERS = $(wildcard kernel/*.h drivers/*.h)
 
-OBJ = ${C_SOURCES:.c=.o}
+OBJ = ${C_KERNEL_SOURCES:.c=.o}
+ASM_KERNEL_OBJ = ${ASM_KERNEL_SOURCES:.asm=.o}
 
 MKDIR_P = mkdir -p
 BUILD_DIR = build
@@ -20,7 +22,7 @@ ${BUILD_DIR}/os-image: ${BUILD_DIR}/boot_sect.bin ${BUILD_DIR}/kernel.bin
 	cat $^ > ${BUILD_DIR}/os-image
 
 # Build the kernel binary
-${BUILD_DIR}/kernel.bin: kernel/kernel_entry.o ${OBJ}
+${BUILD_DIR}/kernel.bin: kernel/kernel_entry.o ${OBJ} ${ASM_KERNEL_OBJ}
 	ld -o $@ -Ttext 0x1000 -melf_i386 $^ --oformat binary --entry main
 # is 0x1912 as high as I can go without crashes?
 
@@ -31,7 +33,7 @@ ${BUILD_DIR}/kernel.bin: kernel/kernel_entry.o ${OBJ}
 %.o: %.asm
 	nasm $< -f elf -o $@
 
-%.bin: ${ASM_SOURCES}
+%.bin: ${ASM_BOOT_SOURCES}
 	nasm $< -f bin -I 'boot/' -o $@ 
 	
 run-qemu: all
