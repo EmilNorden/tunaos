@@ -4,7 +4,7 @@
 
 
 int get_screen_offset(int col, int row);
-int get_cursor();
+int get_cursor(void);
 int handle_scrolling(int offset);
 void print_char(char character, int col, int row, char attribute);
 void set_cursor(int offset);
@@ -50,7 +50,7 @@ int get_screen_offset(int col, int row) {
 	return (row * MAX_COLS + col) * 2;	
 }
 
-int get_cursor() {
+int get_cursor(void) {
 	int offset;
 	/* 
 		The device uses its control register as an index to select its
@@ -100,7 +100,7 @@ void print(char *message) {
 	print_at(message, -1, -1);
 }
 
-void clear_screen() {
+void clear_screen(void) {
 	int row;
 	int col;
 	

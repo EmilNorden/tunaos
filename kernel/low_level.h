@@ -13,4 +13,6 @@ unsigned short port_word_in(unsigned short port);
 /* Writes a word to specified port */
 void port_word_out(unsigned short port, unsigned short data);
 
+void io_wait(void);
+
 #endif

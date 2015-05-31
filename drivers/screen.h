@@ -14,7 +14,7 @@
 #define REG_INTERNAL_HIOFFSET	14
 #define REG_INTERNAL_LOOFFSET	15
 
-void clear_screen();
+void clear_screen(void);
 void print_at(char *message, int col, int row);
 void print(char *message);
 
