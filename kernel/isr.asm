@@ -13,12 +13,23 @@ global _isr11
 global _isr12
 global _isr13
 global _isr14
+global _isr15
 global _isr16
 global _isr17
 global _isr18
 global _isr19
 global _isr20
+global _isr21
+global _isr22
+global _isr23
+global _isr24
+global _isr25
+global _isr26
+global _isr27
+global _isr28
+global _isr29
 global _isr30
+global _isr31
 
 ; Divide by zero
 _isr0:
@@ -79,9 +90,7 @@ _isr0:
 ; Double fault
 _isr8:
 	cli
-	push byte 0
-	push byte 8
-	jmp isr_common_err_code
+	jmp isr_common
     
 ; Coprocessor segment overrun
 _isr9:
@@ -93,37 +102,34 @@ _isr9:
 ; Invalid TSS
 _isr10:
 	cli
-	push byte 0
-	push byte 10
-	jmp isr_common_err_code
+	jmp isr_common
     
 ; Segment not present
 _isr11:
 	cli
-	push byte 0
-	push byte 11
-	jmp isr_common_err_code
+	jmp isr_common
     
 ; Stack-segment fault
 _isr12:
 	cli
-	push byte 0
-	push byte 12
-	jmp isr_common_err_code
+	jmp isr_common
     
 ; General protection fault
 _isr13:
 	cli
-	push byte 0
-	push byte 13
-	jmp isr_common_err_code
+	jmp isr_common
     
 ; Page fault
 _isr14:
 	cli
+	jmp isr_common
+	
+; Unknown interrupt exception
+_isr15:
+	cli
 	push byte 0
-	push byte 14
-	jmp isr_common_err_code
+	push byte 15
+	jmp isr_common
     
 ; x87 floating-point exception
 _isr16:
@@ -137,7 +143,7 @@ _isr17:
 	cli
 	push byte 0
 	push byte 17
-	jmp isr_common_err_code
+	jmp isr_common
     
 ; Machine check
 _isr18:
@@ -159,44 +165,88 @@ _isr20:
 	push byte 0
 	push byte 20
 	jmp isr_common
+	
+; Reserved
+_isr21:
+	cli
+	push byte 0
+	push byte 21
+	jmp isr_common	
+
+; Reserved
+_isr22:
+	cli
+	push byte 0
+	push byte 22
+	jmp isr_common
+
+; Reserved
+_isr23:
+	cli
+	push byte 0
+	push byte 23
+	jmp isr_common
+	
+; Reserved
+_isr24:
+	cli
+	push byte 0
+	push byte 24
+	jmp isr_common
+	
+; Reserved
+_isr25:
+	cli
+	push byte 0
+	push byte 25
+	jmp isr_common
     
+; Reserved
+_isr26:
+	cli
+	push byte 0
+	push byte 26
+	jmp isr_common
+	
+; Reserved
+_isr27:
+	cli
+	push byte 0
+	push byte 27
+	jmp isr_common
+	
+; Reserved
+_isr28:
+	cli
+	push byte 0
+	push byte 28
+	jmp isr_common
+	
+; Reserved
+_isr29:
+	cli
+	push byte 0
+	push byte 29
+	jmp isr_common
+	
 ; Security exception
 _isr30:
 	cli
 	push byte 0
 	push byte 30
-	jmp isr_common_err_code
+	jmp isr_common
+	
+; Reserved
+_isr31:
+	cli
+	push byte 0
+	push byte 31
+	jmp isr_common
     
 extern interrupt_handler
 
-; The reason for having an isr_common and isr_common_err_code is because we need to pop the interrupt
-; error code in the latter. Thats on the to-do list.
-isr_common:
-    pusha
-    push ds
-    push es
-    push fs
-    push gs
-    mov ax, 0x10   ; Load the Kernel Data Segment descriptor!
-    mov ds, ax
-    mov es, ax
-    mov fs, ax
-    mov gs, ax
-    mov eax, esp   ; Push us the stack
-    push eax
-    mov eax, interrupt_handler
-    call eax       ; A special call, preserves the 'eip' register
-    pop eax
-    pop gs
-    pop fs
-    pop es
-    pop ds
-    popa
-    add esp, 8     ; Cleans up the pushed error code and pushed ISR number
-    iret           ; pops 5 things at once: CS, EIP, EFLAGS, SS, and ESP!
-    
 
-isr_common_err_code:
+isr_common:
     pusha
     push ds
     push es

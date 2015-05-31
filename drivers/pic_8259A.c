@@ -60,11 +60,11 @@ void pic_remap(void)
 	io_wait();
 	
 	// Tell master PIC that there is a slave PIC at IRQ2 (0000 0100)
-	port_byte_out(PIC1_DATA, 4);							
+	port_byte_out(PIC1_DATA, 0x04);							
 	io_wait();
 	
 	// Tell slave PIC its cascade identity (0000 0010)
-	port_byte_out(PIC2_DATA, 2);							
+	port_byte_out(PIC2_DATA, 0x02);							
 	io_wait();
 	
 	// Set 8086 mode
@@ -73,8 +73,8 @@ void pic_remap(void)
 	port_byte_out(PIC2_DATA, ICW4_8086);
 	io_wait();
 	
-	port_byte_out(PIC1_DATA, master_masks);					// Restore saved masks
-	port_byte_out(PIC2_DATA, slave_masks);
+	port_byte_out(PIC1_DATA, 0);					// Restore saved masks // DEBUG: set masks to 0 always
+	port_byte_out(PIC2_DATA, 0);
 }
 
 void pic_send_eoi(unsigned char irq)
