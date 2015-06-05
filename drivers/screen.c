@@ -92,7 +92,7 @@ void print_at(char *message, int col, int row) {
 	
 	int i = 0;
 	while(message[i] != 0) {
-		print_char(message[i++], col, row, WHITE_ON_BLACK);
+		print_char(message[i++], -1, -1, WHITE_ON_BLACK);
 	}
 }
 
