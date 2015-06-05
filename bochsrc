@@ -1,3 +1,4 @@
 floppya: 1_44=build/os-image, status=inserted
 boot: a
 display_library: sdl2
+speaker: enabled=1, mode=system
