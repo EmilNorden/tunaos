@@ -6,9 +6,11 @@
 #include "irq.h"
 #include "../drivers/pic.h"
 
+void irq_set_interrupt_gate(uint32_t num, uint32_t base, uint16_t selector, uint8_t dpl);
+
 /* This array is actually an array of function pointers. We use
 *  this to handle custom IRQ handlers for a given IRQ */
-void *irq_routines[16] =
+irq_handler_func irq_routines[16] =
 {
     0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0
@@ -59,15 +61,6 @@ struct  __attribute__((packed)) IDTEntry {
 	uint8_t dpl			: 2;	// Descriptor Privilege Level.
 	uint8_t present		: 1;	// 0 if descriptor is not used.	
 	uint16_t offset_hi;			// offset bits 16..31
-};
-
-/* This defines what the stack looks like after an ISR was running */
-struct regs
-{
-    unsigned int gs, fs, es, ds;      /* pushed the segs last */
-    unsigned int edi, esi, ebp, esp, ebx, edx, ecx, eax;  /* pushed by 'pusha' */
-    unsigned int int_no, err_code;    /* our 'push byte #' and ecodes do this */
-    unsigned int eip, cs, eflags, useresp, ss;   /* pushed by the processor automatically */ 
 };
 
 /* 
@@ -146,21 +139,6 @@ void timer_handler(struct regs *r) {
 	print("timer!\n");
 }
 
-void keyboard_handler(struct regs *r) {
-	print("keyboard data: ");
-	int data = port_byte_in(0x60);
-	
-	char *buf = "     ";
-	int_to_string(data & 0x7F, buf); // Mask away top bit
-	
-	print(buf);
-	if(data & 0x80)
-		print(" released\n");
-	else
-		print(" pressed\n");
-}
-
-
 void irq_initialize(void)
 {
 	irq_initialize_idt();
@@ -170,9 +148,13 @@ void irq_initialize(void)
 	port_byte_out(0xa1, 0xff);
 	
 	irq_routines[0] = timer_handler;
-	irq_routines[1] = keyboard_handler;
 	
 	__asm__ __volatile__("sti");
+}
+
+void irq_set_handler(int irq, irq_handler_func handler)
+{
+	irq_routines[irq] = handler;
 }
 
 void irq_set_interrupt_gate(uint32_t num, uint32_t base, uint16_t selector, uint8_t dpl)
