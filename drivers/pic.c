@@ -1,4 +1,4 @@
-#include "pic_8259A.h"
+#include "pic.h"
 #include "../kernel/low_level.h"
 #include <stdint.h>
 

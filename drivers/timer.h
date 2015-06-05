@@ -3,8 +3,8 @@
 	Compatible with HMOS 8254, and is a superset of 8253
 */
 
-#ifndef PIT_82C54_H_
-#define PIT_82C54_H_
+#ifndef TIMER_H_
+#define TIMER_H_
 
 typedef enum { PIT_BCD_OFF = 0, PIT_BCD_ON } PIT_BCD;
 typedef enum 
@@ -37,4 +37,4 @@ void pit_initialize(void);
 
 void pit_set_counter(PIT_BCD format, PIT_MODE mode, PIT_READWRITE rw, PIT_SC select_counter);
 
-#endif /* PIT_82C54_H_ */
+#endif /* TIMER */

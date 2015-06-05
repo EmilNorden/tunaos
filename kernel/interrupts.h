@@ -1,7 +1,6 @@
 #ifndef INTERRUPTS_H_
 #define INTERRUPTS_H_
 
-#include "../drivers/pic_8259A.h"
 #include <stdint.h>
 
 void irq_initialize(void);

@@ -1,5 +1,5 @@
 #include "../drivers/screen.h"
-#include "../drivers/pit_82C54.h"
+#include "../drivers/timer.h"
 #include "interrupts.h"
 #include <stdint.h>
 #include "util.h"

@@ -1,4 +1,4 @@
-#include "pit_82C54.h"
+#include "timer.h"
 #include "../kernel/low_level.h"
 #include <stdint.h>
 #include "../kernel/util.h"
