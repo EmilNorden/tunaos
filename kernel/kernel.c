@@ -18,10 +18,7 @@ void main(void)
 	irq_initialize();
 	print("done\n");
 	
-	// Initialize devices, system timer first?
-	//print("Init system timer...");
-	pit_set_counter(PIT_BCD_OFF, PIT_MODE_2, PIT_RW_LSB_MSB, PIT_SC_0);
-	//print("done");
-	
-	for(;;){}
+	for(;;) {
+		__asm__ __volatile__("hlt");
+	}
 }

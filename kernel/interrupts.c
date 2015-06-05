@@ -145,21 +145,33 @@ void timer_handler(struct regs *r) {
 	print("timer!\n");
 }
 
+void keyboard_handler(struct regs *r) {
+	print("keyboard data: ");
+	int data = port_byte_in(0x60);
+	
+	char *buf = "     ";
+	int_to_string(data & 0x7F, buf); // Mask away top bit
+	
+	print(buf);
+	if(data & 0x80)
+		print(" released\n");
+	else
+		print(" pressed\n");
+}
+
+
 void irq_initialize(void)
 {
 	irq_initialize_idt();
 	pic_initialize();
 	
-	port_byte_out(0x21, 0xFF);
-	port_byte_out(0xA1, 0xFF);
-	
-	pic_clear_mask(0);
-	pic_clear_mask(1);
-	pic_clear_mask(2);
+	port_byte_out(0x21, 0xfd);
+	port_byte_out(0xa1, 0xff);
 	
 	irq_routines[0] = timer_handler;
+	irq_routines[1] = keyboard_handler;
 	
-	__asm__("sti");
+	__asm__ __volatile__("sti");
 }
 
 void irq_set_interrupt_gate(uint32_t num, uint32_t base, uint16_t selector, uint8_t dpl)
@@ -177,18 +189,25 @@ void interrupt_handler(struct regs *r)
 {
 	if(r->int_no < 32) {
 		print(exception_messages[r->int_no]);
-		for(;;);
 	}
 }
 
 void irq_handler(struct regs *r)
 {
 	void (*handler)(struct regs *r);
-	
-	handler = irq_routines[r->int_no - 32];
+	int irq = r->int_no - 32;
+		
+	handler = irq_routines[irq];
 	if(handler) {
 		handler(r);
 	}
+	else {
+		char *buf = "     ";
+		int_to_string(irq, buf);
+		print("IRQ '");
+		print(buf);
+		print("' not handled.\n");
+	}
 	
-	pic_send_eoi(r->int_no - 32);
+	pic_send_eoi(irq);
 }
