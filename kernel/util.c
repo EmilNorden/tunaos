@@ -23,3 +23,13 @@ void int_to_string(int value, char *input)
 		input[i] = buffer[char_count - i - 1];
 	}
 }
+
+unsigned int strlen(const char *str)
+{
+	const char *base = str;
+	while(*str) {
+		str++;
+	}
+	
+	return str - base;
+}

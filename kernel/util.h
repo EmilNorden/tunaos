@@ -6,4 +6,6 @@ void memory_copy(char *source, char *dest, int count);
 
 void int_to_string(int value, char *input);
 
+unsigned int strlen(const char *str);
+
 #endif

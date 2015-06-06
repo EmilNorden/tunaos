@@ -16,7 +16,8 @@ typedef void (*irq_handler_func)(struct regs*);
 
 void irq_initialize(void);
 void irq_set_handler(int irq, irq_handler_func handler);
-
+void irq_enable(void);
+void irq_disable(void);
 
 
 

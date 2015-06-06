@@ -85,28 +85,46 @@ void set_cursor(int offset) {
 	port_byte_out(REG_SCREEN_DATA, (unsigned char)offset);
 }
 
-void print_at(char *message, int col, int row) {
+void print_at(const char *message, int col, int row)
+{
+	print_at_clr(message, col, row, WHITE_ON_BLACK);
+}
+
+void print_at_clr(const char *message, int col, int row, unsigned char color)
+{
 	if(col >= 0 && row >= 0) {
 		set_cursor(get_screen_offset(col, row));
 	}
 	
 	int i = 0;
 	while(message[i] != 0) {
-		print_char(message[i++], -1, -1, WHITE_ON_BLACK);
+		print_char(message[i++], -1, -1, color);
 	}
 }
 
-void print(char *message) {
+void print(const char *message)
+{
 	print_at(message, -1, -1);
 }
 
-void clear_screen(void) {
+void print_clr(const char *message, unsigned char color)
+{
+	print_at_clr(message, -1, -1, color);
+}
+
+void clear_screen(void)
+{
+	clear_screen_clr(WHITE_ON_BLACK);
+}
+
+void clear_screen_clr(unsigned char color)
+{
 	int row;
 	int col;
 	
 	for(row = 0; row < MAX_ROWS; row++) {
 		for(col = 0; col < MAX_COLS; col++) {
-			print_char(' ', col, row, WHITE_ON_BLACK);
+			print_char(' ', col, row, color);
 		}
 	}
 	

@@ -144,12 +144,22 @@ void irq_initialize(void)
 	port_byte_out(0x21, 0xfc);
 	port_byte_out(0xa1, 0xff);
 	
-	__asm__ __volatile__("sti");
+	irq_enable();
 }
 
 void irq_set_handler(int irq, irq_handler_func handler)
 {
 	irq_routines[irq] = handler;
+}
+
+void irq_enable(void)
+{
+	__asm__ __volatile__("sti");
+}
+
+void irq_disable(void)
+{
+	__asm__ __volatile__("cli");
 }
 
 void _irq_set_interrupt_gate(uint32_t num, uint32_t base, uint16_t selector, uint8_t dpl)

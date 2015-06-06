@@ -2,6 +2,7 @@ ASM_KERNEL_SOURCES = $(wildcard kernel/*.asm)
 C_KERNEL_SOURCES = $(wildcard kernel/*.c drivers/*.c)
 ASM_BOOT_SOURCES = $(wildcard boot/*.asm)
 HEADERS = $(wildcard kernel/*.h drivers/*.h)
+GCC_FLAGS = -D ENABLE_ASSERTIONS
 
 OBJ = ${C_KERNEL_SOURCES:.c=.o}
 ASM_KERNEL_OBJ = ${ASM_KERNEL_SOURCES:.asm=.o}
@@ -28,7 +29,7 @@ ${BUILD_DIR}/kernel.bin: kernel/kernel_entry.o ${OBJ} ${ASM_KERNEL_OBJ}
 
 # Build the kernel object file
 %.o: %.c ${HEADERS}
-	gcc -Wpedantic -std=c11 -ffreestanding -m32 -c $< -o $@
+	gcc -Wpedantic ${GCC_FLAGS} -std=c11 -ffreestanding -m32 -c $< -o $@
 
 %.o: %.asm
 	nasm $< -f elf -o $@

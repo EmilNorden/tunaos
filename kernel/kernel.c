@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include "util.h"
 #include "low_level.h"
+#include "system.h"
 
 int ticks = 0;
 int secs = 0;
@@ -16,8 +17,6 @@ void timer_handler(struct regs *r)
 		char *buf = "          ";
 		int_to_string(secs, buf);
 		print_at(buf, 0, 3);
-		//print(buf);
-		//print("\n");
 	}
 }
 
