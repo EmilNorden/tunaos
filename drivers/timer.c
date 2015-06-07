@@ -1,8 +1,8 @@
 #include "timer.h"
-#include "../kernel/low_level.h"
-#include <stdint.h>
-#include "../kernel/util.h"
 #include "screen.h"
+#include "../kernel/low_level.h"
+#include "../kernel/util.h"
+#include <stdint.h>
 
 #define PIT_DATA0			0x40
 #define PIT_DATA1			0x41
@@ -15,7 +15,7 @@ void pit_init()
 }
 
 void pit_set_counter(PIT_BCD format, PIT_MODE mode, PIT_READWRITE rw, PIT_SC select_counter)
-{
+ {	
 	uint8_t control_word = format | mode | rw | select_counter;
 	
 	// DEBUG: print control_word

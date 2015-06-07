@@ -1,10 +1,11 @@
 #include "interrupts.h"
-#include "../drivers/screen.h"
 #include "low_level.h"
 #include "util.h"
 #include "isr.h"
 #include "irq.h"
+#include "system.h"
 #include "../drivers/pic.h"
+#include "../drivers/screen.h"
 
 void _irq_initialize_idt(void);
 void _irq_set_interrupt_gate(uint32_t num, uint32_t base, uint16_t selector, uint8_t dpl);
@@ -149,6 +150,8 @@ void irq_initialize(void)
 
 void irq_set_handler(int irq, irq_handler_func handler)
 {
+	ASSERT(irq >= 0 && irq < 16, "Invalid IRQ number");
+	
 	irq_routines[irq] = handler;
 }
 
@@ -164,6 +167,8 @@ void irq_disable(void)
 
 void _irq_set_interrupt_gate(uint32_t num, uint32_t base, uint16_t selector, uint8_t dpl)
 {
+	ASSERT(num >= 0 && num < 256, "Invalid IDT entry index");
+	
 	idt[num].offset_lo = base & 0xFFFF;
 	idt[num].offset_hi = (base >> 16) & 0xFFFF;
 	idt[num].zero = 0;
@@ -187,6 +192,8 @@ void irq_handler(struct regs *r)
 {
 	void (*handler)(struct regs *r);
 	int irq = r->int_no - 32;
+	
+	ASSERT(irq >= 0 && irq < 32, "Intercepted unknown hardware IRQ");
 	
 	// IRQ7 gets special treatment
 	if(irq == 7) {

@@ -1,5 +1,6 @@
 #include "pic.h"
 #include "../kernel/low_level.h"
+#include "../kernel/system.h"
 #include <stdint.h>
 
 #define PIC1			0x20
@@ -79,6 +80,8 @@ void pic_remap(void)
 
 void pic_send_eoi(unsigned char irq)
 {
+	ASSERT(irq >= 0 && irq < 16, "Argument is unknown IRQ");
+	
 	if(irq >= 8) // If the IRQ came from the slave PIC, send the EOI to the slave aswell.
 		port_byte_out(PIC2_COMMAND, PIC_EOI);
 		
@@ -87,6 +90,8 @@ void pic_send_eoi(unsigned char irq)
 
 void pic_set_mask(unsigned char irq)
 {
+	ASSERT(irq >= 0 && irq < 16, "Argument is unknown IRQ");
+	
 	pic_type dest;
 	unsigned char mask;
 	
@@ -104,6 +109,8 @@ void pic_set_mask(unsigned char irq)
 
 void pic_clear_mask(unsigned char irq)
 {
+	ASSERT(irq >= 0 && irq < 16, "Argument is unknown IRQ");
+	
 	pic_type dest;
 	
 	if(irq >= 8)  {
@@ -120,5 +127,6 @@ void pic_clear_mask(unsigned char irq)
 
 unsigned char pic_get_mask(pic_type type)
 {
+	ASSERT(type == PIC_SLAVE || type == PIC_MASTER, "Argument not PIC_MASTER or PIC_SLAVE");
 	return port_byte_in((short)type);
 }
