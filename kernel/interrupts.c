@@ -190,7 +190,7 @@ void interrupt_handler(struct regs *r)
 // Invoked for any hardware IRQ
 void irq_handler(struct regs *r)
 {
-	void (*handler)(struct regs *r);
+	irq_handler_func handler;
 	int irq = r->int_no - 32;
 	
 	ASSERT(irq >= 0 && irq < 32, "Intercepted unknown hardware IRQ");
@@ -206,7 +206,7 @@ void irq_handler(struct regs *r)
 		handler(r);
 	}
 	else {
-		char *buf = "     ";
+		char *buf = "       ";
 		int_to_string(irq, buf);
 		print("IRQ '");
 		print(buf);
