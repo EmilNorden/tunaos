@@ -27,5 +27,5 @@ void pit_set_counter(PIT_BCD format, PIT_MODE mode, PIT_READWRITE rw, PIT_SC sel
 	int divisor = 1193180 / 100;
 	port_byte_out(PIT_COMMAND, control_word);
 	port_byte_out(PIT_DATA0, divisor & 0xFF);
-	port_byte_out(PIT_DATA0, 0x00 >> 8);
-}		
+	port_byte_out(PIT_DATA0, divisor >> 8);
+}
