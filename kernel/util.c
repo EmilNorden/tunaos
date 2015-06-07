@@ -10,8 +10,20 @@ void int_to_string(int value, char *input)
 	char *buffer = "                    ";
 	const int divisor = 10;
 	
+	if(value == 0) {
+		input[0] = '0';
+		input[1] = '\0';
+		return;
+	}
+	
 	int char_count = 1;
 	buffer[0] = '\0';
+	
+	if(value < 0) {
+		buffer[char_count++] = '-';
+		value = -value;
+	}
+	
 	while(value > 0) {
 		int remainder = value % divisor;
 		buffer[char_count++] = 48 + remainder;
