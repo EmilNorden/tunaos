@@ -48,7 +48,7 @@ load_kernel:
 	call disk_reset
 	
 	mov bx, KERNEL_OFFSET			; Load 20 sector AFTER the boot sector
-	mov dh, 20						; (where our kernel is), to address KERNEL_OFFSET
+	mov dh, 27						; (where our kernel is), to address KERNEL_OFFSET
 	mov dl, [BOOT_DRIVE]			; REMEMBER that when the kernel grows, we need to read more sectors...
 	call disk_load
 	

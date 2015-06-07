@@ -3,6 +3,7 @@
 #include "util.h"
 #include "low_level.h"
 #include "system_clock.h"
+#include "../drivers/cmos.h"
 #include <stdint.h>
 
 void keyboard_handler(struct regs *r)
@@ -14,9 +15,19 @@ void keyboard_handler(struct regs *r)
 		char *buf = "               ";
 		int_to_string(uptime, buf);
 		
-		print("Key pressed. The system has been running for ");
+		/*print("Key pressed. The system has been running for ");
 		print(buf);
-		print(" seconds!\n");
+		print(" seconds!\n");*/
+		
+		print("The current time is ");
+		int_to_string(cmos_get_hours(), buf);
+		print(buf);
+		print(":");
+		int_to_string(cmos_get_minutes(), buf);
+		print(buf);
+		print(":");
+		int_to_string(cmos_get_seconds(), buf);
+		print(buf);
 	}
 }
 
@@ -34,7 +45,7 @@ void main(void)
 	clock_init();
 	print("done\n");
 	
-	
+	cmos_init();
 	
 	for(;;) {
 		__asm__ __volatile__("hlt");
