@@ -28,8 +28,5 @@ void panic(const char *file, const char *function, int line, const char *message
 		print_clr(message, print_attribute);
 	}
 	
-	print_at_clr("================================ Kernel Panic!! ================================", 0, 24, print_attribute);
-	print("another line");
-	
 	__asm__ __volatile__("hlt");
 }
