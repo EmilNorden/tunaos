@@ -1,6 +1,7 @@
 ASM_KERNEL_SOURCES = $(wildcard kernel/*.asm)
 C_KERNEL_SOURCES = $(wildcard kernel/*.c drivers/*.c)
 ASM_BOOT_SOURCES = $(wildcard boot/*.asm)
+ASM_LOADER_SOURCES = $(wildcard boot/loader/*.asm)
 HEADERS = $(wildcard kernel/*.h drivers/*.h)
 GCC_FLAGS = -D ENABLE_ASSERTIONS
 
@@ -19,13 +20,15 @@ build_dir: ${BUILD_DIR}
 ${BUILD_DIR}:
 	${MKDIR_P} ${BUILD_DIR}
 
-${BUILD_DIR}/os-image: ${BUILD_DIR}/boot_sect.bin ${BUILD_DIR}/kernel.bin
+${BUILD_DIR}/os-image: ${BUILD_DIR}/boot_sect.bin ${BUILD_DIR}/boot_loader.bin ${BUILD_DIR}/kernel.bin
 	cat $^ > ${BUILD_DIR}/os-image
+	
+${BUILD_DIR}/boot_loader.bin: boot/loader/loader.asm
+	nasm $< -f bin -I 'boot/loader/' -o ${BUILD_DIR}/boot_loader.bin
 
 # Build the kernel binary
 ${BUILD_DIR}/kernel.bin: kernel/kernel_entry.o ${OBJ} ${ASM_KERNEL_OBJ}
-	ld -o $@ -Ttext 0x1000 -melf_i386 $^ --oformat binary --entry main
-# is 0x1912 as high as I can go without crashes?
+	ld -o $@ -Ttext 0x1400 -melf_i386 $^ --oformat binary --entry main
 
 # Build the kernel object file
 %.o: %.c ${HEADERS}
@@ -48,5 +51,6 @@ usb: all
 
 clean:
 	rm -fr *.bin *.dis *.o os-image
+	rm -fr ${BUILD_DIR}/*.bin ${BUILD_DIR}/*.dis ${BUILD_DIR}/*.o ${BUILD_DIR}/os-image
 	rm -fr kernel/*.o boot/*.bin driver/*.o
 
