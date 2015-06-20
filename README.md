@@ -1,4 +1,4 @@
-# potatismOS
+# tunaOS
 
 **Description**: A simple 32-bit OS written for fun. Does not attempt to solve any problems of the world.
 It is written for the x86 architecture in assembly and C.
