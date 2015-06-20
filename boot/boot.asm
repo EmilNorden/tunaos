@@ -44,8 +44,8 @@ load_loader:
 	mov dl, [BOOT_DRIVE]
 	call disk_reset
 	
-	mov bx, LOADER_OFFSET			; Load 2 sectors (1024 bytes) AFTER the boot sector
-	mov dh, 2						; to address LOADER_OFFSET
+	mov bx, LOADER_OFFSET			; Load 3 sectors (1024+512 bytes) AFTER the boot sector
+	mov dh, 3						; to address LOADER_OFFSET
 	mov dl, [BOOT_DRIVE]			
 	mov cl, 0x02					; Start reading from second sector (i.e after the boot sector)
 	call disk_load

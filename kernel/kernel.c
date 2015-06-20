@@ -4,6 +4,7 @@
 #include "low_level.h"
 #include "system_clock.h"
 #include "../drivers/cmos.h"
+#include "system.h"
 #include <stdint.h>
 
 void keyboard_handler(struct regs *r)
@@ -45,7 +46,13 @@ void main(void)
 	clock_init();
 	print("done\n");
 	
-	cmos_init();
+	// DEBUG: retrieving and printing number of memory map entries retrieved by secondary bootloader
+	uint16_t entries = *(uint16_t*)0x1400;
+	char *buf = "    ";
+	int_to_string(entries, buf);
+	print(buf);
+	
+	//cmos_init();
 	
 	for(;;) {
 		__asm__ __volatile__("hlt");

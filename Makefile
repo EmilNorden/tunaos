@@ -28,7 +28,7 @@ ${BUILD_DIR}/boot_loader.bin: boot/loader/loader.asm
 
 # Build the kernel binary
 ${BUILD_DIR}/kernel.bin: kernel/kernel_entry.o ${OBJ} ${ASM_KERNEL_OBJ}
-	ld -o $@ -Ttext 0x1400 -melf_i386 $^ --oformat binary --entry main
+	ld -o $@ -Ttext 0x1600 -melf_i386 $^ --oformat binary --entry main
 
 # Build the kernel object file
 %.o: %.c ${HEADERS}
