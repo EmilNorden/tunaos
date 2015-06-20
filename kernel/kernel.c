@@ -31,7 +31,7 @@ void keyboard_handler(struct regs *r)
 void main(void)
 {
 	clear_screen();
-	print("Booting potatismOS 0.0.1-pre-alpha...\n");
+	print("Booting tunaOS 0.0.1-pre-alpha...\n");
 	
 	print("Init IRQ subsystem...");
 	irq_initialize();
