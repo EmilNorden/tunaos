@@ -23,17 +23,6 @@ void _cmos_determine_time_format(void)
 	
 	_cmos_format_is_24 = status & 0x02;
 	_cmos_format_is_bcd = status & 0x04;
-	
-	char *buf = "     ";
-	int_to_string(_cmos_format_is_24, buf);
-	print("status 24: ");
-	print(buf);
-	print("\n");
-	
-	int_to_string(_cmos_format_is_bcd, buf);
-	print("status 24: ");
-	print(buf);
-	print("\n");
 }
 
 uint8_t _cmos_convert_bcd_value(uint8_t bcd)

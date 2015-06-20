@@ -50,9 +50,8 @@ loop:
 	cmp EAX, EDX
 	jne fail
 	
-	jmp investigate_entry
-		
-investigate_entry:
+	; Should "investigate" entry here. For instance if length is zero we can skip it.
+	; (and by skipping, its just a matter of NOT incrementing DI, so it will be overwritten by the next entry)
 	
 	; entry looks good, keep it in memory by incrementing ES:DI
 	add DI, 24

@@ -4,8 +4,8 @@
 #include "low_level.h"
 #include "system_clock.h"
 #include "../drivers/cmos.h"
-#include "system.h"
 #include <stdint.h>
+#include "memory.h"
 
 void keyboard_handler(struct regs *r)
 {
@@ -15,10 +15,6 @@ void keyboard_handler(struct regs *r)
 		int uptime = clock_get_uptime();
 		char *buf = "               ";
 		int_to_string(uptime, buf);
-		
-		/*print("Key pressed. The system has been running for ");
-		print(buf);
-		print(" seconds!\n");*/
 		
 		print("The current time is ");
 		int_to_string(cmos_get_hours(), buf);
@@ -46,13 +42,9 @@ void main(void)
 	clock_init();
 	print("done\n");
 	
-	// DEBUG: retrieving and printing number of memory map entries retrieved by secondary bootloader
-	uint16_t entries = *(uint16_t*)0x1400;
-	char *buf = "    ";
-	int_to_string(entries, buf);
-	print(buf);
+	memory_init();
 	
-	//cmos_init();
+	cmos_init();
 	
 	for(;;) {
 		__asm__ __volatile__("hlt");
