@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include "util.h"
 #include "../drivers/screen.h"
+#include "system.h"
 
 #define MEMORY_MAP_BASE_ADDRESS		0x1400
 
@@ -81,9 +82,11 @@ void *malloc(unsigned int size)
 		
 		current_region->length -= size;
 		
-		int *ptr = (int*)(current_region + current_region->length);
-		*ptr = size; 
+		
+		int *ptr = (int*)(((char*)current_region) + current_region->length);
+		*ptr = size;
 		return ++ptr;
+		
 	}
 	
 	return 0;
@@ -93,6 +96,8 @@ void free(void *p)
 {
 	int *intptr = (int*)p;
 	int region_length = *(--intptr);
+	
+	PANIC_ON(region_length <= 0, "An attempt was made to free invalid memory block.");
 	
 	struct free_region *region = (struct free_region*)intptr;
 	region->length = region_length;
@@ -108,4 +113,30 @@ void memory_zero(void *p, unsigned int size)
 	{
 		*p_current = 0;
 	}while(++p_current != p_end);
+}
+
+void debug_print_free_regions()
+{
+	struct free_region *current = free_head;
+	
+	char *buf = "            ";
+	uint32_t total = 0;
+	int i = 1;
+	while(current) {
+		int_to_string(i++, buf);
+		print(buf);
+		print(": ");
+		print("Size: ");
+		int_to_string(current->length, buf);
+		print(buf);
+		print("\n");
+		
+		total += current->length;
+		current = current->next;	
+	}
+	
+	print("Total: ");
+	int_to_string(total, buf);
+	print(buf);
+	print("\n");
 }
