@@ -1,7 +1,7 @@
 #ifndef MEMORY_H_
 #define MEMORY_H_
 
-void memory_init();
+void memory_init(void);
 
 void *malloc(unsigned int size);
 void free(void *p);

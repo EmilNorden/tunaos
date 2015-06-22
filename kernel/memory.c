@@ -25,6 +25,7 @@ struct __attribute__((packed)) memory_map_entry {
 struct free_region {
 	uint64_t length;
 	struct free_region *next;
+	struct free_region *prev;
 };
 
 struct free_region *free_head = 0;
@@ -32,7 +33,13 @@ struct free_region *free_head = 0;
 struct memory_map_entry *memory_map = (struct memory_map_entry*) (MEMORY_MAP_BASE_ADDRESS+2);
 uint16_t memory_map_entry_count;
 
-void memory_init()
+void _memory_merge_adjacent_regions(struct free_region *reg);
+
+int _memory_get_region_start(struct free_region *reg);
+int _memory_get_region_end(struct free_region *reg);
+void _memory_remove_region(struct free_region *reg);
+
+void memory_init(void)
 {
 	memory_map_entry_count = *(uint16_t*)MEMORY_MAP_BASE_ADDRESS;
 	int i = 0;
@@ -55,6 +62,7 @@ void memory_init()
 			current_region = (struct free_region*)base;
 			current_region->length = memory_map[i].length;
 			current_region->next = 0;
+			current_region->prev = previous_region;
 			
 			if(previous_region)
 				previous_region->next = current_region;
@@ -82,7 +90,6 @@ void *malloc(unsigned int size)
 		
 		current_region->length -= size;
 		
-		
 		int *ptr = (int*)(((char*)current_region) + current_region->length);
 		*ptr = size;
 		return ++ptr;
@@ -102,7 +109,10 @@ void free(void *p)
 	struct free_region *region = (struct free_region*)intptr;
 	region->length = region_length;
 	region->next = free_head;
+	region->prev = 0;
 	free_head = region;
+	
+	_memory_merge_adjacent_regions(region);
 }
 
 void memory_zero(void *p, unsigned int size)
@@ -139,4 +149,73 @@ void debug_print_free_regions()
 	int_to_string(total, buf);
 	print(buf);
 	print("\n");
+}
+
+void _memory_merge_adjacent_regions(struct free_region *reg)
+{
+	int reg_start = _memory_get_region_start(reg);
+	int reg_end = _memory_get_region_end(reg);
+	
+	struct free_region *current_region = free_head;
+	
+	int i = 0;
+	char *buf = "         ";
+	while(current_region) {
+		
+		int_to_string(i++, buf);
+		print("iteration: ");
+		print(buf);
+		print("\n");
+		
+		if(current_region != reg) {
+		
+			int current_region_start = _memory_get_region_start(current_region);
+			int current_region_end = _memory_get_region_end(current_region);
+			
+			// Check if the region below is free.
+			if(current_region_end == reg_start) {
+				// If so, extend it to cover our newly free'd region
+				current_region->length += reg->length;
+				
+				// and remove our newly free'd region from the linked list.
+				_memory_remove_region(reg);
+				
+				//_memory_merge_adjacent_regions(current_region);
+			}
+			
+			// And the same as above, but checking against the region above.
+			if(current_region_start == reg_end) {
+				reg->length += current_region->length;
+		
+				_memory_remove_region(current_region);
+			}
+		}
+		current_region = current_region->next;
+	}
+}
+
+int _memory_get_region_start(struct free_region *reg)
+{
+	return (int)reg;	
+}
+
+int _memory_get_region_end(struct free_region *reg)
+{
+	unsigned char *reg_start = (unsigned char*)reg;
+	return (int)(reg_start + reg->length);
+}
+
+void _memory_remove_region(struct free_region *reg)
+{
+	if(reg->prev) {
+		reg->prev->next = reg->next;
+	}
+	
+	if(reg->next) {
+		reg->next->prev = reg->prev;
+	}
+	
+	if(reg == free_head) {
+		free_head = reg->next;
+	}
 }
