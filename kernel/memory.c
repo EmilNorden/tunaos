@@ -21,61 +21,83 @@ struct __attribute__((packed)) memory_map_entry {
 	uint32_t acpi; // extended
 };
 
+struct free_region {
+	uint64_t length;
+	struct free_region *next;
+};
+
+struct free_region *free_head = 0;
+
 struct memory_map_entry *memory_map = (struct memory_map_entry*) (MEMORY_MAP_BASE_ADDRESS+2);
 uint16_t memory_map_entry_count;
 
 void memory_init()
 {
 	memory_map_entry_count = *(uint16_t*)MEMORY_MAP_BASE_ADDRESS;
-	
-	char *buf = "                    ";
 	int i = 0;
+	
+	struct free_region *previous_region = 0;
+	struct free_region *current_region = 0;
+	
 	uint64_t total_available = 0;
-	print("Printing memory map:\n");
-	for(i = 0; i < memory_map_entry_count; ++i) {
-		print("== entry:");
-		int_to_string(i, buf);
-		print(buf);
-		print("\n");
-		
-		print("base: ");
-		int_to_string(memory_map[i].base_address, buf);
-		print(buf);
-		print("\n");
-		
-		print("length: ");
-		int_to_string(memory_map[i].length, buf);
-		print(buf);
-		print("\n");
-		
-		print("type: ");
-		switch(memory_map[i].type) {
-			case REGION_TYPE_USABLE:
-				print("REGION_TYPE_USABLE\n");
-				break;	
-			case REGION_TYPE_RESERVED:
-				print("REGION_TYPE_RESERVED\n");
-				break;
-			case REGION_TYPE_ACPI_RECLAIMABLE:
-				print("REGION_TYPE_ACPI_RECLAIMABLE\n");
-				break;
-			case REGION_TYPE_ACPI_NVS:
-				print("REGION_TYPE_ACPI_NVS\n");
-				break;
-			case REGION_TYPE_BAD_MEMORY:
-				print("REGION_TYPE_BAD_MEMORY\n");
-				break;
-		}
-		
+	for(int i = 0; i < memory_map_entry_count; ++i) {
 		if(memory_map[i].type == REGION_TYPE_USABLE || memory_map[i].type == REGION_TYPE_ACPI_RECLAIMABLE) {
+			
+			if(memory_map[i].base_address + memory_map[i].length >= 0xFFFFFFFF) {
+				
+				print("Ignoring memory region outside 32-bit range.");
+				continue;
+				
+			}
+			
+			int base = (int)memory_map[i].base_address;
+			current_region = (struct free_region*)base;
+			current_region->length = memory_map[i].length;
+			current_region->next = 0;
+			
+			if(previous_region)
+				previous_region->next = current_region;
+			else
+				free_head = current_region;
+				
+			previous_region = current_region;
+			
 			total_available += memory_map[i].length;
+			
 		}
 	}
 }
 
 void *malloc(unsigned int size)
 {
+	size = size < sizeof(struct free_region) ? sizeof(struct free_region) : size;
+	size += sizeof(int);
 	
+	struct free_region *current_region = free_head;
+	while(current_region && current_region->length < size)
+		current_region = current_region->next;
+		
+	if(current_region) {
+		
+		current_region->length -= size;
+		
+		int *ptr = (int*)(current_region + current_region->length);
+		*ptr = size; 
+		return ++ptr;
+	}
+	
+	return 0;
+}
+
+void free(void *p)
+{
+	int *intptr = (int*)p;
+	int region_length = *(--intptr);
+	
+	struct free_region *region = (struct free_region*)intptr;
+	region->length = region_length;
+	region->next = free_head;
+	free_head = region;
 }
 
 void memory_zero(void *p, unsigned int size)

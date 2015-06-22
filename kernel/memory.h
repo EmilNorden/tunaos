@@ -4,6 +4,7 @@
 void memory_init();
 
 void *malloc(unsigned int size);
+void free(void *p);
 
 void memory_zero(void *p, unsigned int size);
 
