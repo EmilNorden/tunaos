@@ -28,10 +28,12 @@ struct free_region {
 	struct free_region *prev;
 };
 
-struct free_region *free_head = 0;
+static struct free_region *free_head = 0;
+static size_t total_memory;
+static size_t available_memory;
 
-struct memory_map_entry *memory_map = (struct memory_map_entry*) (MEMORY_MAP_BASE_ADDRESS+2);
-uint16_t memory_map_entry_count;
+static struct memory_map_entry *memory_map = (struct memory_map_entry*) (MEMORY_MAP_BASE_ADDRESS+2);
+static uint16_t memory_map_entry_count;
 
 static void merge_adjacent_regions(struct free_region *reg);
 static void find_adjacent_free_regions(struct free_region *reg, struct free_region **lower_region, struct free_region **higher_region);
@@ -43,7 +45,7 @@ void memory_init(void)
 {
 	memory_map_entry_count = *(uint16_t*)MEMORY_MAP_BASE_ADDRESS;	
 	
-	uint32_t total_available = 0;
+	total_memory = 0;
 	
 	struct free_region *current_region;
 	char *buf = "        ";
@@ -66,10 +68,11 @@ void memory_init(void)
 			free_head->prev = current_region;
 			free_head = current_region;
 			
-			total_available += memory_map[i].length;
-			
+			total_memory += memory_map[i].length;
 		}
 	}
+	
+	available_memory = total_memory;
 }
 
 void *malloc(size_t size)
@@ -87,6 +90,8 @@ void *malloc(size_t size)
 		
 		int *ptr = (int*)(((char*)current_region) + current_region->length);
 		*ptr = size;
+		
+		available_memory -= size;
 		return ++ptr;
 		
 	}
@@ -109,6 +114,18 @@ void free(void *p)
 	free_head = region;
 	
 	merge_adjacent_regions(region);
+	
+	available_memory += region_length;
+}
+
+size_t get_available_memory(void)
+{
+	return available_memory;
+}
+
+size_t get_total_memory(void)
+{
+	return total_memory;
 }
 
 void memory_zero(void *p, size_t size)
@@ -167,6 +184,7 @@ static void find_adjacent_free_regions(struct free_region *reg, struct free_regi
 	while(current_region) {
 		
 		if(current_region != reg) {
+			
 			uintptr_t current_region_start = get_region_start(current_region);
 			uintptr_t current_region_end = get_region_end(current_region);
 			
@@ -179,7 +197,6 @@ static void find_adjacent_free_regions(struct free_region *reg, struct free_regi
 		}
 		
 		current_region = current_region->next;
-		
 	}
 }
 
@@ -193,6 +210,7 @@ static void merge_adjacent_regions(struct free_region *reg)
 	struct free_region *lower_region = 0;
 	struct free_region *higher_region = 0;
 	
+	// Find adjacent regions, if any.
 	find_adjacent_free_regions(reg, &lower_region, &higher_region);
 	
 	if(higher_region) {

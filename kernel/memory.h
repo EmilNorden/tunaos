@@ -8,6 +8,9 @@ void memory_init(void);
 void *malloc(size_t size);
 void free(void *p);
 
+size_t get_available_memory(void);
+size_t get_total_memory(void);
+
 void memory_zero(void *p, size_t size);
 
 /* Copies 'count' number of bytes pointed to by 'source' to the memory pointed to by 'dest' */
