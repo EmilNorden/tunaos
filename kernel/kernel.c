@@ -4,7 +4,6 @@
 #include "low_level.h"
 #include "system_clock.h"
 #include "../drivers/cmos.h"
-#include <stdint.h>
 #include "memory.h"
 
 void keyboard_handler(struct regs *r)

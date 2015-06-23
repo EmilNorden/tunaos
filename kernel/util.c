@@ -1,4 +1,8 @@
 #include "util.h"
+#include <stdarg.h>
+
+static void snprintf_signed_decimal_int(char **str, char *str_end, int value);
+static void snprintf_string(char **str, char *str_end, char *value);
 
 void int_to_string(int value, char *input)
 {
@@ -31,7 +35,7 @@ void int_to_string(int value, char *input)
 	}
 }
 
-unsigned int strlen(const char *str)
+size_t strlen(const char *str)
 {
 	const char *base = str;
 	while(*str) {
@@ -39,4 +43,56 @@ unsigned int strlen(const char *str)
 	}
 	
 	return str - base;
+}
+
+int snprintf(char *str, size_t n, const char *format, int nargs, ...)
+{
+	va_list format_args;
+	va_start(format_args, nargs);
+	
+	char *str_end = str + n - 1;
+	
+	while(str != str_end && *format){
+		char c = *format++;
+		if(c == '%') {
+			char token = *format++;
+			if(token == 'd') {
+				snprintf_signed_decimal_int(&str, str_end, va_arg(format_args, int));
+			}
+			else if(token == 's') {
+				snprintf_string(&str, str_end, va_arg(format_args, char*));
+			}
+		}
+		else {
+			*str++ = c;
+		}
+		
+	}
+			
+	*str = '\0';
+	
+	va_end(format_args);
+	
+	return 0;
+}
+
+static void snprintf_signed_decimal_int(char **str, char *str_end, int value) {
+	char buf[32];
+	int_to_string(value, buf);
+	
+	char *pbuf = buf;
+	
+	while(*pbuf && *str != str_end) {
+		**str = *pbuf;
+		(*str)++;
+		pbuf++;
+	}
+}
+
+static void snprintf_string(char **str, char *str_end, char *value) {	
+	while(*value && *str != str_end) {
+		**str = *value;
+		(*str)++;
+		value++;
+	}
 }
