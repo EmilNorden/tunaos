@@ -42,20 +42,11 @@ void main(void)
 	clock_init();
 	print("done\n");
 	
-	memory_init();
-	
 	cmos_init();
 	
-	
-	debug_print_free_regions();
-	
-	void *p = malloc(256);
-	
-	debug_print_free_regions();
-	
-	free(p);
-	
-	debug_print_free_regions();
+	memory_init();
+		
+	debug_print_free_regions();	
 	
 	for(;;) {
 		__asm__ __volatile__("hlt");

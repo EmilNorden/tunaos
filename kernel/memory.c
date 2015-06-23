@@ -1,8 +1,8 @@
 #include "memory.h"
-#include <stdint.h>
 #include "util.h"
 #include "../drivers/screen.h"
 #include "system.h"
+#include <stdint.h>
 
 #define MEMORY_MAP_BASE_ADDRESS		0x1400
 
@@ -33,21 +33,21 @@ struct free_region *free_head = 0;
 struct memory_map_entry *memory_map = (struct memory_map_entry*) (MEMORY_MAP_BASE_ADDRESS+2);
 uint16_t memory_map_entry_count;
 
-void _memory_merge_adjacent_regions(struct free_region *reg);
-
-int _memory_get_region_start(struct free_region *reg);
-int _memory_get_region_end(struct free_region *reg);
-void _memory_remove_region(struct free_region *reg);
+static void merge_adjacent_regions(struct free_region *reg);
+static void find_adjacent_free_regions(struct free_region *reg, struct free_region **lower_region, struct free_region **higher_region);
+static uintptr_t get_region_start(struct free_region *reg);
+static uintptr_t get_region_end(struct free_region *reg);
+static void remove_region(struct free_region *reg);
 
 void memory_init(void)
 {
-	memory_map_entry_count = *(uint16_t*)MEMORY_MAP_BASE_ADDRESS;
-	int i = 0;
+	memory_map_entry_count = *(uint16_t*)MEMORY_MAP_BASE_ADDRESS;	
 	
-	struct free_region *previous_region = 0;
-	struct free_region *current_region = 0;
+	uint32_t total_available = 0;
 	
-	uint64_t total_available = 0;
+	struct free_region *current_region;
+	char *buf = "        ";
+	
 	for(int i = 0; i < memory_map_entry_count; ++i) {
 		if(memory_map[i].type == REGION_TYPE_USABLE || memory_map[i].type == REGION_TYPE_ACPI_RECLAIMABLE) {
 			
@@ -58,18 +58,13 @@ void memory_init(void)
 				
 			}
 			
-			int base = (int)memory_map[i].base_address;
+			uintptr_t base = (uintptr_t)memory_map[i].base_address;
 			current_region = (struct free_region*)base;
 			current_region->length = memory_map[i].length;
-			current_region->next = 0;
-			current_region->prev = previous_region;
-			
-			if(previous_region)
-				previous_region->next = current_region;
-			else
-				free_head = current_region;
-				
-			previous_region = current_region;
+			current_region->prev = 0;
+			current_region->next = free_head;
+			free_head->prev = current_region;
+			free_head = current_region;
 			
 			total_available += memory_map[i].length;
 			
@@ -77,7 +72,7 @@ void memory_init(void)
 	}
 }
 
-void *malloc(unsigned int size)
+void *malloc(size_t size)
 {
 	size = size < sizeof(struct free_region) ? sizeof(struct free_region) : size;
 	size += sizeof(int);
@@ -108,14 +103,15 @@ void free(void *p)
 	
 	struct free_region *region = (struct free_region*)intptr;
 	region->length = region_length;
-	region->next = free_head;
 	region->prev = 0;
+	region->next = free_head;
+	free_head->prev = region;
 	free_head = region;
 	
-	_memory_merge_adjacent_regions(region);
+	merge_adjacent_regions(region);
 }
 
-void memory_zero(void *p, unsigned int size)
+void memory_zero(void *p, size_t size)
 {
 	char *p_current = (char*)p;
 	char *p_end = p_current + size;
@@ -135,8 +131,10 @@ void debug_print_free_regions()
 	while(current) {
 		int_to_string(i++, buf);
 		print(buf);
-		print(": ");
-		print("Size: ");
+		print(" - Location : ");
+		int_to_string((uintptr_t)current, buf);
+		print(buf);
+		print(", Size: ");
 		int_to_string(current->length, buf);
 		print(buf);
 		print("\n");
@@ -151,61 +149,67 @@ void debug_print_free_regions()
 	print("\n");
 }
 
-void _memory_merge_adjacent_regions(struct free_region *reg)
+static void find_adjacent_free_regions(struct free_region *reg, struct free_region **lower_region, struct free_region **higher_region)
 {
-	int reg_start = _memory_get_region_start(reg);
-	int reg_end = _memory_get_region_end(reg);
-	
 	struct free_region *current_region = free_head;
 	
-	int i = 0;
-	char *buf = "         ";
+	uintptr_t reg_start = get_region_start(reg);
+	uintptr_t reg_end = get_region_end(reg); 
+	
 	while(current_region) {
 		
-		int_to_string(i++, buf);
-		print("iteration: ");
-		print(buf);
-		print("\n");
-		
 		if(current_region != reg) {
-		
-			int current_region_start = _memory_get_region_start(current_region);
-			int current_region_end = _memory_get_region_end(current_region);
+			uintptr_t current_region_start = get_region_start(current_region);
+			uintptr_t current_region_end = get_region_end(current_region);
 			
-			// Check if the region below is free.
 			if(current_region_end == reg_start) {
-				// If so, extend it to cover our newly free'd region
-				current_region->length += reg->length;
-				
-				// and remove our newly free'd region from the linked list.
-				_memory_remove_region(reg);
-				
-				//_memory_merge_adjacent_regions(current_region);
+				*lower_region = current_region;
 			}
-			
-			// And the same as above, but checking against the region above.
-			if(current_region_start == reg_end) {
-				reg->length += current_region->length;
-		
-				_memory_remove_region(current_region);
+			else if(current_region_start  == reg_end) {
+				*higher_region = current_region;
 			}
 		}
+		
 		current_region = current_region->next;
+		
 	}
 }
 
-int _memory_get_region_start(struct free_region *reg)
+static void merge_adjacent_regions(struct free_region *reg)
 {
-	return (int)reg;	
+	uintptr_t reg_start = get_region_start(reg);
+	uintptr_t reg_end = get_region_end(reg);
+	
+	struct free_region *current_region = free_head;
+	
+	struct free_region *lower_region = 0;
+	struct free_region *higher_region = 0;
+	
+	find_adjacent_free_regions(reg, &lower_region, &higher_region);
+	
+	if(higher_region) {
+		reg->length += higher_region->length;
+		remove_region(higher_region);
+	}
+	
+	if(lower_region) {
+		lower_region->length += reg->length;
+		remove_region(reg);
+	}
 }
 
-int _memory_get_region_end(struct free_region *reg)
+static uintptr_t get_region_start(struct free_region *reg)
+{
+	return (uintptr_t)reg;	
+}
+
+static uintptr_t get_region_end(struct free_region *reg)
 {
 	unsigned char *reg_start = (unsigned char*)reg;
-	return (int)(reg_start + reg->length);
+	return (uintptr_t)(reg_start + reg->length);
 }
 
-void _memory_remove_region(struct free_region *reg)
+static void remove_region(struct free_region *reg)
 {
 	if(reg->prev) {
 		reg->prev->next = reg->next;
