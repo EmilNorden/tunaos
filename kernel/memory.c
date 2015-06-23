@@ -121,6 +121,14 @@ void memory_zero(void *p, size_t size)
 	}while(++p_current != p_end);
 }
 
+void memory_copy(void *source, void *dest, size_t count) {
+	char *csource = (char*)source;
+	char *cdest = (char*)dest;
+	for(size_t i = 0; i < count; i++) {
+		*(cdest + i) = *(csource + i);
+	}
+}
+
 void debug_print_free_regions()
 {
 	struct free_region *current = free_head;

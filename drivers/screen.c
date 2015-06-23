@@ -1,15 +1,14 @@
 #include "screen.h"
 #include "../kernel/low_level.h"
-#include "../kernel/util.h"
+#include "../kernel/memory.h"
 
+static int get_screen_offset(int col, int row);
+static int get_cursor(void);
+static int handle_scrolling(int offset);
+static void print_char(char character, int col, int row, char attribute);
+static void set_cursor(int offset);
 
-int get_screen_offset(int col, int row);
-int get_cursor(void);
-int handle_scrolling(int offset);
-void print_char(char character, int col, int row, char attribute);
-void set_cursor(int offset);
-
-void print_char(char character, int col, int row, char attribute) {
+static void print_char(char character, int col, int row, char attribute) {
 	
 	unsigned char *vidmem = (unsigned char*)VIDEO_ADDRESS;
 	
@@ -46,11 +45,11 @@ void print_char(char character, int col, int row, char attribute) {
 	set_cursor(offset);
 }
 
-int get_screen_offset(int col, int row) {
+static int get_screen_offset(int col, int row) {
 	return (row * MAX_COLS + col) * 2;	
 }
 
-int get_cursor(void) {
+static int get_cursor(void) {
 	int offset;
 	/* 
 		The device uses its control register as an index to select its
@@ -72,7 +71,7 @@ int get_cursor(void) {
 	 return offset * 2;
 }
 
-void set_cursor(int offset) {
+static void set_cursor(int offset) {
 	/* 
 		Convert from byte offset to character offset. For info on the rest of the code,
 		check get_cursor()
@@ -131,7 +130,7 @@ void clear_screen_clr(unsigned char color)
 	set_cursor(get_screen_offset(0, 0));
 }
 
-int handle_scrolling(int offset) {
+static int handle_scrolling(int offset) {
 	char *vidmem = (char*)VIDEO_ADDRESS;
 	/* If the cursor is still within the bounds of the screen, return it unmodified */
 	if(offset < MAX_ROWS * MAX_COLS * 2) {

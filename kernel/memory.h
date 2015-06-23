@@ -10,6 +10,9 @@ void free(void *p);
 
 void memory_zero(void *p, size_t size);
 
+/* Copies 'count' number of bytes pointed to by 'source' to the memory pointed to by 'dest' */
+void memory_copy(void *source, void *dest, size_t count);
+
 void debug_print_free_regions(void);
 
 #endif
