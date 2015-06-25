@@ -6,6 +6,8 @@
 #include "../drivers/cmos.h"
 #include "memory.h"
 
+#include "cpu.h"
+
 void keyboard_handler(struct regs *r)
 {
 	int data = port_byte_in(0x60);
@@ -46,6 +48,12 @@ void main(void)
 	memory_init();
 		
 	debug_print_free_regions();	
+	
+	struct cpu_info cpu;
+	
+	get_cpu_info(&cpu);
+	
+	print(cpu.vendor_id);
 	
 	for(;;) {
 		__asm__ __volatile__("hlt");
