@@ -50,6 +50,7 @@ int snprintf(char *str, size_t n, const char *format, int nargs, ...)
 	va_list format_args;
 	va_start(format_args, nargs);
 	
+	char *str_beg = str;
 	char *str_end = str + n - 1;
 	
 	while(str != str_end && *format){
@@ -73,7 +74,7 @@ int snprintf(char *str, size_t n, const char *format, int nargs, ...)
 	
 	va_end(format_args);
 	
-	return 0;
+	return str - str_end;
 }
 
 static void snprintf_signed_decimal_int(char **str, char *str_end, int value) {
