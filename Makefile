@@ -1,9 +1,9 @@
 ASM_KERNEL_SOURCES = $(wildcard kernel/*.asm)
-C_KERNEL_SOURCES = $(wildcard kernel/*.c drivers/*.c)
+C_KERNEL_SOURCES = $(wildcard kernel/*.c drivers/*.c common/*.c)
 ASM_BOOT_SOURCES = $(wildcard boot/*.asm)
 ASM_LOADER_SOURCES = $(wildcard boot/loader/*.asm)
 HEADERS = $(wildcard kernel/*.h drivers/*.h)
-GCC_FLAGS = -D ENABLE_ASSERTIONS
+GCC_FLAGS = -DENABLE_ASSERTIONS -DDEBUG_ALLOCATIONS
 
 OBJ = ${C_KERNEL_SOURCES:.c=.o}
 ASM_KERNEL_OBJ = ${ASM_KERNEL_SOURCES:.asm=.o}

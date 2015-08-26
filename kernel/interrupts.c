@@ -183,6 +183,7 @@ void interrupt_handler(struct regs *r)
 {
 	if(r->int_no < 32) {
 		print(exception_messages[r->int_no]);
+		__asm__ __volatile__("hlt");
 	}
 }
 

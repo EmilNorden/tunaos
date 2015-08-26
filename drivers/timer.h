@@ -35,6 +35,6 @@ typedef enum
 
 void pit_initialize(void);
 
-void pit_set_counter(PIT_BCD format, PIT_MODE mode, PIT_READWRITE rw, PIT_SC select_counter);
+void pit_set_counter(PIT_BCD format, PIT_MODE mode, PIT_READWRITE rw, PIT_SC select_counter, int hz);
 
 #endif /* TIMER */

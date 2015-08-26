@@ -77,8 +77,9 @@ void memory_init(void)
 
 void *malloc(size_t size)
 {
-	size = size < sizeof(struct free_region) ? sizeof(struct free_region) : size;
 	size += sizeof(int);
+	size = size < sizeof(struct free_region) ? sizeof(struct free_region) : size;
+	// Align size by 4. Size is divisible by 4 if the two least significant bits are 0.	
 	
 	struct free_region *current_region = free_head;
 	while(current_region && current_region->length < size)
@@ -95,6 +96,13 @@ void *malloc(size_t size)
 		return ++ptr;
 		
 	}
+	
+#ifdef DEBUG_ALLOCATIONS
+	char buffer[32];
+	snprintf(buffer, 32, "Unable to allocate size of %d\n.", 1, size);
+	print(buffer);
+	debug_print_free_regions();
+#endif
 	
 	return 0;
 }
@@ -171,7 +179,7 @@ void debug_print_free_regions()
 	print("Total: ");
 	int_to_string(total, buf);
 	print(buf);
-	print("\n");
+	print(" bytes\n");
 }
 
 static void find_adjacent_free_regions(struct free_region *reg, struct free_region **lower_region, struct free_region **higher_region)

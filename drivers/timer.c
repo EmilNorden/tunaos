@@ -14,7 +14,7 @@ void pit_init()
 	
 }
 
-void pit_set_counter(PIT_BCD format, PIT_MODE mode, PIT_READWRITE rw, PIT_SC select_counter)
+void pit_set_counter(PIT_BCD format, PIT_MODE mode, PIT_READWRITE rw, PIT_SC select_counter, int hz)
  {	
 	uint8_t control_word = format | mode | rw | select_counter;
 	
@@ -24,7 +24,7 @@ void pit_set_counter(PIT_BCD format, PIT_MODE mode, PIT_READWRITE rw, PIT_SC sel
 	print("control_word: ");
 	print(buf);
 	
-	int divisor = 1193180 / 100;
+	int divisor = 1193180 / hz;
 	port_byte_out(PIT_COMMAND, control_word);
 	port_byte_out(PIT_DATA0, divisor & 0xFF);
 	port_byte_out(PIT_DATA0, divisor >> 8);

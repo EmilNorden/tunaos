@@ -1,4 +1,5 @@
 #include "util.h"
+#include "../drivers/screen.h"
 #include <stdarg.h>
 
 static void snprintf_signed_decimal_int(char **str, char *str_end, int value);
@@ -19,7 +20,7 @@ void int_to_string(int value, char *input)
 	buffer[0] = '\0';
 	
 	if(value < 0) {
-		buffer[char_count++] = '-';
+		*input++ = '-';
 		value = -value;
 	}
 	
@@ -95,5 +96,52 @@ static void snprintf_string(char **str, char *str_end, char *value) {
 		**str = *value;
 		(*str)++;
 		value++;
+	}
+}
+
+int hex8(uint8_t value, char *buf) {
+	const char *hex = "0123456789ABCDEF";
+	
+	buf[0] = hex[(value >> 4)];
+	buf[1] = hex[value & 0xF];
+	buf[2] = '\0';
+}
+
+int hex16(uint16_t value, char *buf) {
+	const char *hex = "0123456789ABCDEF";
+	
+	buf[0] = hex[(value >> 12) & 0xF];
+	buf[1] = hex[(value >> 8) & 0xF];
+	buf[2] = hex[(value >> 4) & 0xF];
+	buf[3] = hex[value & 0xF];
+	buf[4] = '\0';
+}
+
+void hex_dump(void *data, size_t len) {
+	const int bytes_per_row = 16;
+	uint8_t *ptr = (uint8_t*)data;
+	
+	char hex_buffer[5];
+	
+	size_t rows = len / bytes_per_row;
+	
+	uint16_t row = 0;
+	for(int i = 0; i < len; ++i) {
+		if((i % bytes_per_row) == 0) {
+			if(i != 0) {
+				print("\n");
+			}
+			hex16(row * bytes_per_row, hex_buffer);
+			print(hex_buffer);
+			print(" ");
+			
+			row++;
+		}
+		
+		hex8(ptr[i], hex_buffer);
+		print(hex_buffer);
+		print(" ");
+		
+		
 	}
 }

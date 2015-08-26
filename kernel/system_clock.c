@@ -19,7 +19,7 @@ void timer_handler(struct regs *r)
 void clock_init(void)
 {
 	irq_set_handler(0, timer_handler);
-	pit_set_counter(PIT_BCD_OFF, PIT_MODE_3, PIT_RW_LSB_MSB, PIT_SC_0);	
+	pit_set_counter(PIT_BCD_OFF, PIT_MODE_3, PIT_RW_LSB_MSB, PIT_SC_0, 100);	
 }
 
 int clock_get_uptime(void)
